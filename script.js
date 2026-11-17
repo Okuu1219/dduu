@@ -16,8 +16,29 @@ const sendButton = document.getElementById("sendButton");
 // 准备记忆篮子
 let chatHistory = [];
 
+
+
 // 3. 添加消息到页面的函数
 function addMessage(text, sender) {
+  // --- 新增：时间戳逻辑 ---
+  const now = new Date();
+  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  // 获取最后一条消息的时间（如果有的话）
+  const lastTime = chatMessages.dataset.lastTime ? parseInt(chatMessages.dataset.lastTime) : 0;
+  const currentTime = now.getTime();
+  
+  // 如果距离上次发消息超过 10 分钟（或者第一次发），就显示时间
+  if (currentTime - lastTime > 10 * 60 * 1000) {
+    const timeDiv = document.createElement("div");
+    timeDiv.classList.add("time-stamp");
+    timeDiv.textContent = timeString;
+    chatMessages.appendChild(timeDiv);
+  }
+  // 更新最后发消息的时间
+  chatMessages.dataset.lastTime = currentTime;
+  // --- 时间戳逻辑结束 ---
+
   const messageDiv = document.createElement("div");
   messageDiv.classList.add("message", sender); // sender 是 'user' 或 'ai'
   
@@ -91,9 +112,8 @@ sendButton.addEventListener("click", async () => {
     }
   }
 
-  // --- 正常请求 ---
+ // --- 正常请求 ---
   try {
-    // 如果篮子里没有 system 指令，就不发；有就一起发
     const response = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       headers: {
@@ -102,7 +122,7 @@ sendButton.addEventListener("click", async () => {
       },
       body: JSON.stringify({
         model: "deepseek-chat",
-        messages: chatHistory // 把整个篮子发过去
+        messages: chatHistory
       })
     });
 
@@ -112,8 +132,8 @@ sendButton.addEventListener("click", async () => {
     // 把 AI 的回复放进篮子
     chatHistory.push({ role: "assistant", content: aiReply });
 
-    // 替换气泡文字
-    loadingDiv.querySelector(".bubble").textContent = aiReply;
+    // 替换气泡文字（这里用了 marked.parse 来解析 Markdown 加粗）
+    loadingDiv.querySelector(".bubble").innerHTML = marked.parse(aiReply);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
   } catch (error) {
@@ -122,35 +142,48 @@ sendButton.addEventListener("click", async () => {
   }
 });
 
-// --- 设置弹窗逻辑 ---
-settingsBtn.addEventListener("click", () => {
-  // 如果篮子里有系统提示词，就显示出来；如果没有，就显示空白
-  if (chatHistory.length > 0 && chatHistory[0].role === "system") {
-    promptInput.value = chatHistory[0].content;
-  } else {
-    promptInput.value = ""; 
+// 监听回车键发送
+messageInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault(); 
+    sendButton.click(); 
   }
-  settingsModal.style.display = "flex";
 });
 
-closeModalBtn.addEventListener("click", () => {
-  settingsModal.style.display = "none";
+// 底部导航切换逻辑
+const navTalk = document.getElementById("nav-talk");
+const navDesk = document.getElementById("nav-desk");
+const navSet = document.getElementById("nav-set");
+const chatContainer = document.querySelector(".chat-container");
+const deskPage = document.getElementById("desk-page");
+const settingsPage = document.getElementById("settings-page"); // 抓住设置页
+
+// 切回日常
+navTalk.addEventListener("click", () => {
+  navTalk.classList.add("active");
+  navDesk.classList.remove("active");
+  navSet.classList.remove("active");
+  chatContainer.style.display = "flex"; 
+  deskPage.style.display = "none";
+  settingsPage.style.display = "none"; // 隐藏设置页
 });
 
-savePromptBtn.addEventListener("click", () => {
-  const newPrompt = promptInput.value.trim();
-  
-  // 找到篮子里现有的系统指令，如果没有就新建一个
-  const systemIndex = chatHistory.findIndex(m => m.role === "system");
-  if (systemIndex !== -1) {
-    chatHistory[systemIndex].content = newPrompt;
-  } else if (newPrompt !== "") {
-    chatHistory.unshift({ role: "system", content: newPrompt });
-  } else {
-    // 如果用户清空了输入框，就把系统指令删掉
-    if (systemIndex !== -1) chatHistory.splice(systemIndex, 1);
-  }
-  
-  alert("指令已保存！");
-  settingsModal.style.display = "none";
+// 切到书桌
+navDesk.addEventListener("click", () => {
+  navDesk.classList.add("active");
+  navTalk.classList.remove("active");
+  navSet.classList.remove("active");
+  chatContainer.style.display = "none";
+  deskPage.style.display = "flex"; 
+  settingsPage.style.display = "none"; // 隐藏设置页
+});
+
+// 切到设置
+navSet.addEventListener("click", () => {
+  navSet.classList.add("active");
+  navTalk.classList.remove("active");
+  navDesk.classList.remove("active");
+  chatContainer.style.display = "none";
+  deskPage.style.display = "none";
+  settingsPage.style.display = "block"; // 显示设置页
 });

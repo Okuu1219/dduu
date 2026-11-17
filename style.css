@@ -1,6 +1,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-family: "Noto Serif SC", "Songti SC", serif;;
   background: #f7f4f0;
   height: 100vh;
   margin: 0;
@@ -33,11 +33,18 @@ body {
   max-width: 75%; padding: 10px 14px; border-radius: 14px;
   font-size: 15px; line-height: 1.6; word-wrap: break-word; white-space: pre-wrap;
 }
+/* 把你的话改成深灰色，去掉背景和气泡 */
 .message.user .bubble {
-  background: #c5b4a5; color: #fff; border-bottom-right-radius: 4px;
+  background: transparent;
+  color: #4a4a4a; 
+  text-align: right; /* 靠右对齐 */
 }
+
+/* 把 AI 的话改成豆沙粉，去掉背景和气泡 */
 .message.ai .bubble {
-  background: #ffffff; color: #1a1a1a; border-bottom-left-radius: 4px;
+  background: transparent;
+  color: #d48c97; /* 豆沙暗粉色 */
+  text-align: left; /* 靠左对齐 */
 }
 .chat-input-area {
   display: flex; gap: 10px; padding: 14px 16px;
@@ -51,4 +58,94 @@ body {
 .send-button {
   padding: 10px 22px; background: #c5b4a5; color: #fff; border: none;
   border-radius: 12px; font-size: 15px; cursor: pointer;
+}
+/* 底部导航栏 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background: rgba(247, 244, 240, 0.95); /* 半透明奶油底色 */
+  backdrop-filter: blur(5px); /* 毛玻璃效果，超高级 */
+  border-top: 1px solid #e0dcd6;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: #999;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: color 0.3s;
+}
+
+.nav-btn.active {
+  color: #c98b92;
+  font-weight: bold;
+}
+
+/* 给底部导航栏留出空间，不让它挡住输入框 */
+.chat-container {
+  height: 100vh !important;
+  padding-bottom: 50px !important; /* 把聊天内容往上推一点，别被导航栏压住 */
+}
+
+/* 聊天时间戳 */
+.time-stamp {
+  text-align: center;
+  font-size: 12px;
+  color: #b0b0b0;
+  margin: 15px 0 5px 0;
+  font-family: "Noto Serif SC", "Songti SC", serif; /* 换成衬线体 */
+  letter-spacing: 1px; /* 加点字间距，更高级 */
+}
+
+/* 设置页面卡片样式 */
+.settings-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* 卡片之间的间距 */
+}
+
+.settings-card {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.6); 
+  border: none; 
+  border-radius: 12px; 
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: transform 0.15s ease !important; /* 强制加上动画 */
+}
+
+.settings-card:active {
+  transform: scale(0.95) !important; /* 强制缩小，稍微明显一点 */
+}
+
+.settings-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; 
+  border: 1.5px solid #dfc1c6; /* 这就是外层的大粉框 */
+  border-radius: 20px; /* 圆角 */
+  padding: 15px; /* 让内层卡片不贴着大框 */
+  background: rgba(255, 255, 255, 0.2); /* 一点点底色区分 */
+}
+
+.card-icon {
+  font-size: 20px;
+  margin-right: 15px;
+}
+
+.card-text {
+  font-size: 16px;
+  color: #4a4a4a;
+  font-family: inherit;
 }
