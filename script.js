@@ -14,7 +14,9 @@ const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 
 // 准备记忆篮子
-let chatHistory = [];
+let chatHistory = [
+  { role: "system", content: "你是一个贴心的AI。如果你想发图片，请在回复里加上暗号：[emoji:1] 或 [emoji:2] 或 [emoji:3]。" }
+];
 
 
 
@@ -132,8 +134,24 @@ sendButton.addEventListener("click", async () => {
     // 把 AI 的回复放进篮子
     chatHistory.push({ role: "assistant", content: aiReply });
 
-    // 替换气泡文字（这里用了 marked.parse 来解析 Markdown 加粗）
+    // 替换气泡文字
     loadingDiv.querySelector(".bubble").innerHTML = marked.parse(aiReply);
+
+    // 👇👇👇 新增：检查 AI 有没有发暗号 👇👇👇
+    if (aiReply.includes("[emoji:")) {
+      const match = aiReply.match(/\[emoji:(\d+)\]/);
+      if (match) {
+        const emojiNum = match[1];
+        const imgElement = document.createElement("img");
+        imgElement.src = `emojis/${emojiNum}.jpg`; 
+        imgElement.style.width = "80px";
+        imgElement.style.borderRadius = "10px";
+        imgElement.style.display = "block";
+        imgElement.style.marginTop = "10px";
+        loadingDiv.querySelector(".bubble").appendChild(imgElement);
+      }
+    }
+    
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
   } catch (error) {
@@ -186,4 +204,75 @@ navSet.addEventListener("click", () => {
   chatContainer.style.display = "none";
   deskPage.style.display = "none";
   settingsPage.style.display = "block"; // 显示设置页
+});
+
+// 表情包弹窗逻辑
+const cardEmoji = document.getElementById("card-emoji");
+const emojiModal = document.getElementById("emoji-modal");
+const closeEmojiBtn = document.getElementById("closeEmojiBtn");
+
+if (cardEmoji && emojiModal && closeEmojiBtn) {
+  cardEmoji.addEventListener("click", () => {
+    // 点击图片，发送到聊天框
+const emojiImgs = document.querySelectorAll("#emoji-modal img");
+emojiImgs.forEach(img => {
+  img.addEventListener("click", () => {
+    const imgSrc = img.getAttribute("src");
+    
+    // 在聊天框里创建一个专属的图片气泡（AI 和 用户都可以用）
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message", "user"); // 默认当作用户发送的
+    
+    // 这里我们不使用文字 bubble，直接放图片
+    const imgElement = document.createElement("img");
+    imgElement.src = imgSrc;
+    imgElement.style.width = "80px";
+    imgElement.style.borderRadius = "10px";
+    
+    messageDiv.appendChild(imgElement);
+    chatMessages.appendChild(messageDiv);
+    
+    // 发送完自动滚到底部，并关闭弹窗
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    emojiModal.style.display = "none";
+  });
+});
+    emojiModal.style.display = "flex";
+  });
+
+  closeEmojiBtn.addEventListener("click", () => {
+    emojiModal.style.display = "none";
+  });
+}
+
+const chatEmojiBtn = document.getElementById("chatEmojiBtn");
+const emojiDrawer = document.getElementById("emoji-drawer");
+
+// 点击笑脸，切换抽屉的显示/隐藏
+chatEmojiBtn.addEventListener("click", () => {
+  if (emojiDrawer.style.display === "none") {
+    emojiDrawer.style.display = "flex"; // 弹出来
+  } else {
+    emojiDrawer.style.display = "none"; // 收回去
+  }
+});
+
+// 让抽屉里的图片也能点击发送
+const drawerImgs = document.querySelectorAll("#emoji-drawer img");
+drawerImgs.forEach(img => {
+  img.addEventListener("click", () => {
+    const imgSrc = img.getAttribute("src");
+    
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message", "user"); 
+    const imgElement = document.createElement("img");
+    imgElement.src = imgSrc;
+    imgElement.style.width = "80px";
+    imgElement.style.borderRadius = "10px";
+    messageDiv.appendChild(imgElement);
+    chatMessages.appendChild(messageDiv);
+    
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    emojiDrawer.style.display = "none"; // 发完自动收起抽屉
+  });
 });

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>dudu</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css" />
@@ -21,7 +21,17 @@
     </main>
 
     <!-- 底部输入区 -->
+
+     <!-- 底部表情抽屉 -->
+
+    <div id="emoji-drawer" style="display: none; height: 200px; background: #f7f4f0; border-top: 1px solid #e0dcd6; padding: 15px; overflow-y: auto; gap: 10px; flex-wrap: wrap; align-content: flex-start;">
+      <img src="emojis/1.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+      <img src="emojis/2.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+      <img src="emojis/3.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+    </div>
+
     <footer class="chat-input-area">
+      <button id="chatEmojiBtn" style="background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 0 5px;">😀</button>
       <textarea id="messageInput" class="message-input" placeholder="说点什么吧..." rows="1"></textarea>
       <button id="sendButton" class="send-button">发送</button>
     </footer>
@@ -50,7 +60,7 @@
         <div class="card-text">提示词</div>
       </div>
       
-      <div class="settings-card">
+      <div class="settings-card" id="card-emoji">
         <div class="card-icon">🖼️</div>
         <div class="card-text">表情包库</div>
       </div>
@@ -59,6 +69,23 @@
         <div class="card-icon">👻</div>
         <div class="card-text"> (待开发)</div>
       </div>
+    </div>
+  </div>
+
+<!-- 表情包弹窗（默认隐藏） -->
+  <div id="emoji-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center;">
+    <div style="background: #f7f4f0; padding: 20px; border-radius: 20px; width: 80%; max-width: 300px; border: 1.5px solid #dfc1c6; text-align: center;">
+      
+      <h3 style="color: #c98b92; margin-top: 0; font-weight: 500;">选择一张贴纸</h3>
+      
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0;">
+        <img src="emojis/1.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+        <img src="emojis/2.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+        <img src="emojis/3.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+      </div>
+      
+      <button id="closeEmojiBtn" style="padding: 8px 20px; border: none; border-radius: 10px; background: #dfc1c6; color: white; cursor: pointer;">关闭</button>
+      
     </div>
   </div>
 
