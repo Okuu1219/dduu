@@ -155,3 +155,21 @@ body {
 .chat-container {
   height: 100dvh !important;
 }
+
+/* 把发送按钮变成完美圆形 */
+.send-button {
+  background: #c98b92 !important; /* 换成蓝色（你也可以改成 #c5b4a5 浅棕色） */
+  color: white !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important; /* 50% 就是正圆 */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  font-size: 20px !important;
+  padding: 0 !important;
+  padding-bottom: 2px !important; /* 让箭头稍微居中一点点 */
+  border: none !important;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* 加一点点小阴影，更有立体感 */
+}

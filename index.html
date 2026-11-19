@@ -9,6 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
 <body>
   <div class="chat-container">
@@ -24,16 +27,52 @@
 
      <!-- 底部表情抽屉 -->
 
-    <div id="emoji-drawer" style="display: none; height: 200px; background: #f7f4f0; border-top: 1px solid #e0dcd6; padding: 15px; overflow-y: auto; gap: 10px; flex-wrap: wrap; align-content: flex-start;">
-      <img src="emojis/1.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
-      <img src="emojis/2.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
-      <img src="emojis/3.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+    <!-- 底部功能面板（拍照、相册等） -->
+    <div id="plus-panel" style="display: none; background: #f7f4f0; border-top: 1px solid #e0dcd6; padding: 20px; justify-content: space-around; text-align: center;">
+      
+      <!-- 表情包（咱们先保留，方便你斗图） -->
+      <div class="panel-item" onclick="toggleEmojiDrawer()" style="cursor: pointer;">
+        <div style="font-size: 30px; margin-bottom: 5px;">😀</div>
+        <div style="font-size: 12px; color: #666;">表情</div>
+      </div>
+
+      <!-- 拍照 -->
+      <div class="panel-item" style="cursor: pointer;">
+        <div style="font-size: 30px; margin-bottom: 5px;">📷</div>
+        <div style="font-size: 12px; color: #666;">拍照</div>
+      </div>
+
+      <!-- 相册 -->
+      <label class="panel-item" style="cursor: pointer; text-align: center;">
+        <div style="font-size: 30px; margin-bottom: 5px;">🖼️</div>
+        <div style="font-size: 12px; color: #666;">相册</div>
+        <!-- 这个 input 是隐藏的，专门用来调取手机里的照片 -->
+        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+      </label>
+      
+      <!-- 语音 -->
+      <div class="panel-item" style="cursor: pointer;">
+        <div style="font-size: 30px; margin-bottom: 5px;">🎤</div>
+        <div style="font-size: 12px; color: #666;">语音</div>
+      </div>
+
+    </div>
+
+    <!-- 原有的表情抽屉保留，只是默认隐藏，点表情按钮时才出来 -->
+    <div id="emoji-drawer" style="display: none; height: 150px; background: #f7f4f0; border-top: 1px solid #e0dcd6; padding: 15px; overflow-y: auto; gap: 10px; flex-wrap: wrap; align-content: flex-start; width: 100%; box-sizing: border-box;">
+      < img src="emojis/1.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+      < img src="emojis/2.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+      < img src="emojis/3.jpg" alt="emoji" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;">
     </div>
 
     <footer class="chat-input-area">
-      <button id="chatEmojiBtn" style="background: transparent; border: none; font-size: 24px; cursor: pointer; padding: 0 5px;">😀</button>
       <textarea id="messageInput" class="message-input" placeholder="说点什么吧..." rows="1"></textarea>
-      <button id="sendButton" class="send-button">发送</button>
+      
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="chatPlusBtn" style="background: transparent; border: 1.5px solid #999; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-size: 20px; color: #666; cursor: pointer; padding: 0; padding-bottom: 2px;">+</button>
+        
+        <button id="sendButton" class="send-button"><i class="fa-solid fa-arrow-up"></i></button>
+      </div>
     </footer>
 
   </div>

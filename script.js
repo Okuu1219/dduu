@@ -14,9 +14,7 @@ const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 
 // 准备记忆篮子
-let chatHistory = [
-  { role: "system", content: "你是一个贴心的AI。如果你想发图片，请在回复里加上暗号：[emoji:1] 或 [emoji:2] 或 [emoji:3]。" }
-];
+let chatHistory = [];
 
 
 
@@ -245,34 +243,111 @@ emojiImgs.forEach(img => {
   });
 }
 
-const chatEmojiBtn = document.getElementById("chatEmojiBtn");
+// 底部面板控制逻辑
+const chatPlusBtn = document.getElementById("chatPlusBtn");
+const plusPanel = document.getElementById("plus-panel");
 const emojiDrawer = document.getElementById("emoji-drawer");
 
-// 点击笑脸，切换抽屉的显示/隐藏
-chatEmojiBtn.addEventListener("click", () => {
-  if (emojiDrawer.style.display === "none") {
-    emojiDrawer.style.display = "flex"; // 弹出来
-  } else {
-    emojiDrawer.style.display = "none"; // 收回去
-  }
-});
+// 点击加号，切换功能面板
+if (chatPlusBtn && plusPanel && emojiDrawer) {
+  chatPlusBtn.addEventListener("click", () => {
+    if (plusPanel.style.display === "none" || plusPanel.style.display === "") {
+      plusPanel.style.display = "flex"; // 弹出来
+      emojiDrawer.style.display = "none"; // 顺便收起表情
+    } else {
+      plusPanel.style.display = "none"; // 收回去
+    }
+  });
+}
 
-// 让抽屉里的图片也能点击发送
-const drawerImgs = document.querySelectorAll("#emoji-drawer img");
-drawerImgs.forEach(img => {
-  img.addEventListener("click", () => {
-    const imgSrc = img.getAttribute("src");
-    
+// 点面板里的“表情”切换出表情包 (供 HTML 的 onclick 调用)
+function toggleEmojiDrawer() {
+  plusPanel.style.display = "none";
+  emojiDrawer.style.display = "flex";
+}
+
+// 上传图片并发送到聊天框
+const imageInput = document.getElementById("imageInput");
+
+if (imageInput) {
+  imageInput.addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 把选中的图片变成一个临时的网址
+    const imgUrl = URL.createObjectURL(file);
+
+    // 在聊天框里显示这张图（跟之前发表情包一样）
     const messageDiv = document.createElement("div");
     messageDiv.classList.add("message", "user"); 
     const imgElement = document.createElement("img");
-    imgElement.src = imgSrc;
-    imgElement.style.width = "80px";
+    imgElement.src = imgUrl;
+    imgElement.style.width = "120px"; // 图片显示大一点
     imgElement.style.borderRadius = "10px";
     messageDiv.appendChild(imgElement);
     chatMessages.appendChild(messageDiv);
     
+    // 滚到底部，收起面板
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    emojiDrawer.style.display = "none"; // 发完自动收起抽屉
+    plusPanel.style.display = "none";
+
+    // 👇👇👇 下面是真正发给 AI 的代码 👇👇👇
+    // 1. 把图片转成 AI 能看懂的 Base64
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const base64Image = e.target.result;
+      
+      // 2. 屏幕上显示一个“正在思考”的气泡
+      const loadingDiv = document.createElement("div");
+      loadingDiv.classList.add("message", "ai");
+      loadingDiv.innerHTML = '<div class="bubble">正在看图片...</div>';
+      chatMessages.appendChild(loadingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      // 3. 把图片塞进记忆篮子
+      chatHistory.push({
+        role: "user",
+        content: [
+          { type: "text", text: "请看看这张图片。" },
+          { type: "image_url", image_url: { url: base64Image } }
+        ]
+      });
+
+      // 4. 发送给 AI
+      try {
+        const response = await fetch("https://api.deepseek.com/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + API_KEY
+          },
+          body: JSON.stringify({
+            model: "deepseek-flash", // 支持看图的模型
+            messages: chatHistory
+          })
+        });
+
+        const data = await response.json();
+        
+        // 如果 API 报错，打印出来
+        if (data.error) {
+           loadingDiv.querySelector(".bubble").textContent = "API报错: " + data.error.message;
+           return;
+        }
+
+        const aiReply = data.choices[0].message.content;
+        chatHistory.push({ role: "assistant", content: aiReply });
+        
+        // 5. 显示 AI 的回复
+        loadingDiv.querySelector(".bubble").innerHTML = marked.parse(aiReply);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      } catch (error) {
+        console.error(error);
+        loadingDiv.querySelector(".bubble").textContent = "请求失败，请检查网络或控制台。";
+      }
+    };
+    reader.readAsDataURL(file); // 启动读取
   });
-});
+}
+console.log("图片代码加载成功！");
