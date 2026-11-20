@@ -16,6 +16,23 @@ const sendButton = document.getElementById("sendButton");
 // 准备记忆篮子
 let chatHistory = JSON.parse(localStorage.getItem("myAiChatHistory")) || [];
 
+// 页面加载时，把历史记录显示在屏幕上
+window.addEventListener('DOMContentLoaded', () => {
+  // 如果篮子里有记忆
+  if (chatHistory.length > 0) {
+    // 先把界面上默认的“你好”删掉
+    chatMessages.innerHTML = ''; 
+    
+    // 把篮子里的每一句话，都变成气泡
+    chatHistory.forEach(msg => {
+      // 跳过系统提示词（就是设置里的人设），这个不用显示
+      if (msg.role !== 'system') {
+        addMessage(msg.content, msg.role === 'user' ? 'user' : 'ai');
+      }
+    });
+  }
+});
+
 
 
 // 3. 添加消息到页面的函数
@@ -353,3 +370,21 @@ if (imageInput) {
   });
 }
 console.log("图片代码加载成功！");
+
+// 清空所有记忆
+const clearMemoryBtn = document.getElementById("clearMemoryBtn");
+if (clearMemoryBtn) {
+  clearMemoryBtn.addEventListener("click", () => {
+    // 1. 清空本地的记忆暗格
+    localStorage.removeItem("myAiChatHistory");
+    // 2. 把篮子倒空
+    chatHistory = [];
+    // 3. 把屏幕上的气泡也删掉
+    chatMessages.innerHTML = `
+      <div class="message ai">
+        <div class="bubble">记忆已清空，我们重新开始吧！</div>
+      </div>
+    `;
+    alert("记忆已彻底清空！");
+  });
+}
