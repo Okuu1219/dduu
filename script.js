@@ -6,7 +6,7 @@ const savePromptBtn = document.getElementById("savePromptBtn");
 const promptInput = document.getElementById("promptInput");
 
 // 1. 填入你的 DeepSeek API Key
-const API_KEY = "sk-f813321968064beda98a4186cef6e175";
+const API_KEY = "sk-5a41f016c7f94e308912fb0e601f5acb";
 
 // 2. 获取网页上的元素
 const chatMessages = document.getElementById("chatMessages");
@@ -14,7 +14,7 @@ const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 
 // 准备记忆篮子
-let chatHistory = [];
+let chatHistory = JSON.parse(localStorage.getItem("myAiChatHistory")) || [];
 
 
 
@@ -64,6 +64,7 @@ sendButton.addEventListener("click", async () => {
   
   // 把用户的话放进篮子（增加一条记录）
   chatHistory.push({ role: "user", content: text });
+  localStorage.setItem("myAiChatHistory", JSON.stringify(chatHistory));
 
   // 显示“正在思考中”的气泡
   const loadingDiv = document.createElement("div");
@@ -131,6 +132,7 @@ sendButton.addEventListener("click", async () => {
 
     // 把 AI 的回复放进篮子
     chatHistory.push({ role: "assistant", content: aiReply });
+    localStorage.setItem("myAiChatHistory", JSON.stringify(chatHistory));
 
     // 替换气泡文字
     loadingDiv.querySelector(".bubble").innerHTML = marked.parse(aiReply);
