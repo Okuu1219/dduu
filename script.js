@@ -132,20 +132,16 @@ sendButton.addEventListener("click", async () => {
 
  // --- 正常请求 ---
   try {
-    const response = await fetch("https://api.deepseek.com/chat/completions", {
+    const response = await fetch("http://1.117.60.110/chat", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + API_KEY
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: chatHistory
-      })
+      body: JSON.stringify({ messages: chatHistory })
     });
 
     const data = await response.json();
-    const aiReply = data.choices[0].message.content;
+    const aiReply = data.reply;
 
     // 把 AI 的回复放进篮子
     chatHistory.push({ role: "assistant", content: aiReply });
@@ -289,19 +285,17 @@ function toggleEmojiDrawer() {
 const imageInput = document.getElementById("imageInput");
 
 if (imageInput) {
-  imageInput.addEventListener("change", function(event) {
+  imageInput.addEventListener("change", async function(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    // 把选中的图片变成一个临时的网址
+    // 1. 在聊天框里显示这张图
     const imgUrl = URL.createObjectURL(file);
-
-    // 在聊天框里显示这张图（跟之前发表情包一样）
     const messageDiv = document.createElement("div");
     messageDiv.classList.add("message", "user"); 
     const imgElement = document.createElement("img");
     imgElement.src = imgUrl;
-    imgElement.style.width = "120px"; // 图片显示大一点
+    imgElement.style.width = "120px";
     imgElement.style.borderRadius = "10px";
     messageDiv.appendChild(imgElement);
     chatMessages.appendChild(messageDiv);
@@ -310,66 +304,37 @@ if (imageInput) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
     plusPanel.style.display = "none";
 
-    // 👇👇👇 下面是真正发给 AI 的代码 👇👇👇
-    // 1. 把图片转成 AI 能看懂的 Base64
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      const base64Image = e.target.result;
-      
-      // 2. 屏幕上显示一个“正在思考”的气泡
-      const loadingDiv = document.createElement("div");
-      loadingDiv.classList.add("message", "ai");
-      loadingDiv.innerHTML = '<div class="bubble">正在看图片...</div>';
-      chatMessages.appendChild(loadingDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+    // 2. 显示上传提示
+    const loadingDiv = document.createElement("div");
+    loadingDiv.classList.add("message", "ai");
+    loadingDiv.innerHTML = '<div class="bubble">正在上传图片到服务器...</div>';
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 
-      // 3. 把图片塞进记忆篮子
-      chatHistory.push({
-        role: "user",
-        content: [
-          { type: "text", text: "请看看这张图片。" },
-          { type: "image_url", image_url: { url: base64Image } }
-        ]
+    try {
+      // 3. 把图片打包发给你的腾讯云
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const uploadRes = await fetch("http://1.117.60.110/upload", {
+        method: "POST",
+        body: formData
       });
+      const uploadData = await uploadRes.json();
 
-      // 4. 发送给 AI
-      try {
-        const response = await fetch("https://api.deepseek.com/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + API_KEY
-          },
-          body: JSON.stringify({
-            model: "deepseek-flash", // 支持看图的模型
-            messages: chatHistory
-          })
-        });
+      // 4. 拿到链接，发给 AI
+      loadingDiv.querySelector(".bubble").textContent = "正在思考...";
+      const finalMessage = "我刚发了一张图片，图片的链接是：" + uploadData.url + " 请根据链接看看这张图。";
+      
+      messageInput.value = finalMessage;
+      sendButton.click();
 
-        const data = await response.json();
-        
-        // 如果 API 报错，打印出来
-        if (data.error) {
-           loadingDiv.querySelector(".bubble").textContent = "API报错: " + data.error.message;
-           return;
-        }
-
-        const aiReply = data.choices[0].message.content;
-        chatHistory.push({ role: "assistant", content: aiReply });
-        
-        // 5. 显示 AI 的回复
-        loadingDiv.querySelector(".bubble").innerHTML = marked.parse(aiReply);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-      } catch (error) {
-        console.error(error);
-        loadingDiv.querySelector(".bubble").textContent = "请求失败，请检查网络或控制台。";
-      }
-    };
-    reader.readAsDataURL(file); // 启动读取
+    } catch (error) {
+      console.error(error);
+      loadingDiv.querySelector(".bubble").textContent = "图片上传失败了，请检查后端是否启动。";
+    }
   });
 }
-console.log("图片代码加载成功！");
 
 // 清空所有记忆
 const clearMemoryBtn = document.getElementById("clearMemoryBtn");
